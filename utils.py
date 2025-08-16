@@ -124,7 +124,6 @@
 #         """
 #     )
 
-      
 import streamlit as st
 import tempfile, os, hashlib, asyncio
 from langchain.document_loaders import PyMuPDFLoader
@@ -149,10 +148,9 @@ if not google_api_key:
 def file_hash(uploaded_file):
     return hashlib.sha256(uploaded_file.getbuffer()).hexdigest()
 
-
 # ------------------ PDF Loading & Splitting ------------------
-@st.cache_resource(show_spinner=False)
-def load_and_split_pdf(hash_key: str, uploaded_file) -> list[Document]:
+@st.cache_resource(show_spinner=False, allow_output_mutation=True)
+def load_and_split_pdf(_hash_key, uploaded_file) -> list[Document]:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
         tmp_file.write(uploaded_file.getbuffer())
         tmp_path = tmp_file.name
@@ -164,10 +162,9 @@ def load_and_split_pdf(hash_key: str, uploaded_file) -> list[Document]:
     splitter = RecursiveCharacterTextSplitter(chunk_size=3000, chunk_overlap=200)
     return splitter.split_documents(docs)
 
-
 # ------------------ Vector Store ------------------
-@st.cache_resource(show_spinner=False)
-def create_vector_store_cached(hash_key: str, _documents: list[Document]):
+@st.cache_resource(show_spinner=False, allow_output_mutation=True)
+def create_vector_store_cached(_hash_key, _documents: list[Document]):
     embeddings = GoogleGenerativeAIEmbeddings(
         model='models/gemini-embedding-001',
         google_api_key=google_api_key
@@ -186,8 +183,7 @@ def create_vector_store_cached(hash_key: str, _documents: list[Document]):
             print(f"Skipping batch {i//batch_size} due to error: {e}")
     return vector_store
 
-
-# ------------------ Utility ------------------
+# ------------------ Utilities ------------------
 def batch_chunks(chunks, batch_size=4):
     batched_docs = []
     for i in range(0, len(chunks), batch_size):
@@ -195,12 +191,10 @@ def batch_chunks(chunks, batch_size=4):
         batched_docs.append(Document(page_content=merged_content))
     return batched_docs
 
-
 def format_documents(retrieved_docs):
     return "\n\n".join(doc.page_content for doc in retrieved_docs)
 
-
-@st.cache_resource(show_spinner=False)
+@st.cache_resource(show_spinner=False, allow_output_mutation=True)
 def create_qa_prompt(_retriever):
     prompt = PromptTemplate(
         template="""
@@ -219,18 +213,3 @@ def create_qa_prompt(_retriever):
     })
 
     return parallel_chain | prompt
-
-
-@st.cache_resource(show_spinner=False)
-def latex_check_prompt():
-    return PromptTemplate(
-        input_variables=["text"],
-        template="""
-        You are an expert in LaTeX and mathematical writing.
-
-        Detect all math expressions and format them properly for Markdown/LaTeX.
-        Keep non-math text unchanged.
-
-        Text:
-        {text}"""
-    )
