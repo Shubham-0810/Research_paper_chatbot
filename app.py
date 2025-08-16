@@ -102,12 +102,24 @@ uploaded_file = st.file_uploader("Upload your research paper (PDF)", type=["pdf"
 if uploaded_file:
     hash_key = file_hash(uploaded_file)
 
-    with st.spinner("Processing document..."):
-        # Load & split
-        split_docs = load_and_split_pdf(hash_key, uploaded_file)
+    # Reset previous data if a new PDF is uploaded
+    if st.session_state.get("current_hash") != hash_key:
+        for key in ["split_docs", "vector_store", "current_hash"]:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.session_state.current_hash = hash_key
 
-        # Create vector store
-        vector_store = create_vector_store_cached(hash_key, split_docs)
+    with st.spinner("Processing document..."):
+        # Load & split (cached per hash)
+        if "split_docs" not in st.session_state:
+            st.session_state.split_docs = load_and_split_pdf(hash_key, uploaded_file)
+        split_docs = st.session_state.split_docs
+
+        # Vector store (cached per hash)
+        if "vector_store" not in st.session_state:
+            st.session_state.vector_store = create_vector_store_cached(hash_key, split_docs)
+        vector_store = st.session_state.vector_store
+
         retriever = vector_store.as_retriever(search_type='mmr', search_kwargs={"k": 4, 'lambda_mult': 0.5})
 
         # LLM
