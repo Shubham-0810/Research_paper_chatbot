@@ -8,7 +8,13 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 import streamlit as st
 import os
 import tempfile
+import asyncio
 
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    
 google_api_key = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not google_api_key:
     raise ValueError("GOOGLE_API_KEY not found in secrets.toml or environment variables.")
