@@ -97,33 +97,42 @@ def check_limit():
         st.stop()
     st.session_state.requests += 1
 
+# ------------------ Clear PDF-related session state ------------------
+def clear_pdf_cache():
+    keys_to_clear = ["split_docs", "vector_store", "retriever", "summary_chain", "qa_chain"]
+    for key in keys_to_clear:
+        if key in st.session_state:
+            del st.session_state[key]
+
 # ------------------ File Upload ------------------
 uploaded_file = st.file_uploader("Upload your research paper (PDF)", type=["pdf"])
+
 if uploaded_file:
-
-    if "last_file_hash" not in st.session_state:
-        st.session_state.last_file_hash = ""
-
     new_file_hash = file_hash(uploaded_file)
 
-    # If a new file is uploaded, clear previous cache
+    # Clear previous PDF data if new file uploaded
+    if "last_file_hash" not in st.session_state:
+        st.session_state.last_file_hash = ""
     if new_file_hash != st.session_state.last_file_hash:
         st.session_state.last_file_hash = new_file_hash
-        st.experimental_memo.clear()          # clears memoized functions
-        st.experimental_singleton.clear() 
-    
-
-
+        clear_pdf_cache()
 
     with st.spinner("Processing document..."):
-        
-        split_docs = load_and_split_pdf(new_file_hash, uploaded_file)
+        # Load & split
+        if "split_docs" not in st.session_state:
+            st.session_state.split_docs = load_and_split_pdf(new_file_hash, uploaded_file)
 
-        vector_store = create_vector_store_cached(new_file_hash, split_docs)
+        # Create vector store
+        if "vector_store" not in st.session_state:
+            st.session_state.vector_store = create_vector_store_cached(
+                new_file_hash, st.session_state.split_docs
+            )
+        if "retriever" not in st.session_state:
+            st.session_state.retriever = st.session_state.vector_store.as_retriever(
+                search_type='mmr', search_kwargs={"k": 4, 'lambda_mult': 0.5}
+            )
 
-        retriever = vector_store.as_retriever(search_type='mmr', search_kwargs={"k": 4, 'lambda_mult': 0.5})
-
-        # LLM
+        # Initialize LLM
         llm = ChatGoogleGenerativeAI(
             api_key=st.secrets["GOOGLE_API_KEY"],
             model='gemini-2.5-flash-lite'
@@ -133,9 +142,10 @@ if uploaded_file:
         if st.button("Generate Summary"):
             check_limit()
             with st.spinner("Summarizing..."):
-                batched_docs = batch_chunks(split_docs, batch_size=3)
-                summary_chain = get_summary_chain(llm)
-                summary = summary_chain.run(batched_docs)
+                batched_docs = batch_chunks(st.session_state.split_docs, batch_size=3)
+                if "summary_chain" not in st.session_state:
+                    st.session_state.summary_chain = get_summary_chain(llm)
+                summary = st.session_state.summary_chain.run(batched_docs)
                 st.subheader("📜 Summary")
                 st.write(summary)
 
@@ -145,6 +155,7 @@ if uploaded_file:
         if st.button("Get Answer"):
             check_limit()
             with st.spinner("Fetching answer..."):
-                qa_chain = get_qa_chain(llm, retriever)
-                answer = qa_chain.invoke(user_q)
+                if "qa_chain" not in st.session_state:
+                    st.session_state.qa_chain = get_qa_chain(llm, st.session_state.retriever)
+                answer = st.session_state.qa_chain.invoke(user_q)
                 st.write(answer)
