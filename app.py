@@ -29,12 +29,15 @@ def check_limit():
 uploaded_file = st.file_uploader("Upload your research paper (PDF)", type=["pdf"])
 
 if uploaded_file:
+    hash_key = file_hash(uploaded_file)
+    
     with st.spinner("Processing document..."):
+        
         # Load & split
-        split_docs = load_and_split_pdf(uploaded_file)
+        split_docs = load_and_split_pdf(hash_key, uploaded_file)
 
         # Create vector store
-        vector_store = create_vector_store_cached(split_docs)
+        vector_store = create_vector_store_cached(hash_key,split_docs)
         retriever = vector_store.as_retriever(search_type='mmr', search_kwargs={"k": 4, 'lambda_mult': 0.5})
 
         # LLM
