@@ -19,7 +19,7 @@ google_api_key = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not google_api_key:
     raise ValueError("GOOGLE_API_KEY not found in secrets.toml or environment variables.")
 
-@st.cache_resource
+
 def load_and_split_pdf(uploaded_file):
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
@@ -33,7 +33,7 @@ def load_and_split_pdf(uploaded_file):
     return splitter.split_documents(docs)
 
 
-@st.cache_resource
+
 def create_vector_store_cached(_documents):
     return create_vector_store(_documents)
 
