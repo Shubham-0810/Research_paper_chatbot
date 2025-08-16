@@ -6,7 +6,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnableParallel, RunnablePassthrough
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import streamlit as st
-import os
+import os, hashlib
 import tempfile
 import asyncio
 
@@ -19,8 +19,11 @@ google_api_key = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not google_api_key:
     raise ValueError("GOOGLE_API_KEY not found in secrets.toml or environment variables.")
 
+def file_hash(uploaded_file):
+    return hashlib.sha256(uploaded_file.getbuffer()).hexdigest()
 
-def load_and_split_pdf(uploaded_file):
+@st.cache_resource
+def load_and_split_pdf(hash_key, uploaded_file):
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
         tmp_file.write(uploaded_file.getbuffer())
@@ -33,8 +36,8 @@ def load_and_split_pdf(uploaded_file):
     return splitter.split_documents(docs)
 
 
-
-def create_vector_store_cached(_documents):
+@st.cache_resource
+def create_vector_store_cached(hash_key, _documents):
     return create_vector_store(_documents)
 
 
