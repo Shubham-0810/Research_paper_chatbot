@@ -149,7 +149,7 @@ def file_hash(uploaded_file):
     return hashlib.sha256(uploaded_file.getbuffer()).hexdigest()
 
 # ------------------ PDF Loading & Splitting ------------------
-@st.cache_resource(show_spinner=False, allow_output_mutation=True)
+@st.cache_resource(show_spinner=False)
 def load_and_split_pdf(_hash_key, uploaded_file) -> list[Document]:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
         tmp_file.write(uploaded_file.getbuffer())
@@ -163,7 +163,7 @@ def load_and_split_pdf(_hash_key, uploaded_file) -> list[Document]:
     return splitter.split_documents(docs)
 
 # ------------------ Vector Store ------------------
-@st.cache_resource(show_spinner=False, allow_output_mutation=True)
+@st.cache_resource(show_spinner=False)
 def create_vector_store_cached(_hash_key, _documents: list[Document]):
     embeddings = GoogleGenerativeAIEmbeddings(
         model='models/gemini-embedding-001',
@@ -194,7 +194,7 @@ def batch_chunks(chunks, batch_size=4):
 def format_documents(retrieved_docs):
     return "\n\n".join(doc.page_content for doc in retrieved_docs)
 
-@st.cache_resource(show_spinner=False, allow_output_mutation=True)
+@st.cache_resource(show_spinner=False)
 def create_qa_prompt(_retriever):
     prompt = PromptTemplate(
         template="""
@@ -213,3 +213,26 @@ def create_qa_prompt(_retriever):
     })
 
     return parallel_chain | prompt
+
+@st.cache_resource(show_spinner=False)
+def latex_check_prompt():
+    return PromptTemplate(
+        input_variables=["text"],
+        template="""
+        You are an expert in LaTeX and mathematical writing.
+
+        I will give you some text that contains mathematical expressions, possibly in plain parentheses or square brackets.
+        Your task:
+        - Detect all math expressions (inside parentheses like (x+y) or brackets like [ a = b ]).
+        - Rewrite **inline math** using `$ ... $` delimiters.
+        - Rewrite **standalone/multi-part equations** using display math delimiters: `$$ ... $$`.
+        - Ensure all LaTeX compiles correctly in Markdown and that all symbols and special characters display properly.
+        - Keep non-math text exactly as it is.
+        - Do not remove any math or change its meaning.
+
+        Return only the corrected text, ready for Markdown rendering with LaTeX.
+
+        Here is the text:
+        {text}
+        """
+    )
