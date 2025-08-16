@@ -1,7 +1,7 @@
 from langchain.chains.summarize import load_summarize_chain
 from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
-from utils import create_qa_prompt, latex_check_prompt
+from utils import create_qa_prompt_cached, latex_check_prompt
 import streamlit as st
 
 @st.cache_resource
