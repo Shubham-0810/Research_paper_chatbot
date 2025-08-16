@@ -2,7 +2,13 @@ import streamlit as st
 from chains import get_summary_chain, get_qa_chain
 from utils import load_and_split_pdf, batch_chunks, create_vector_store_cached
 from langchain_google_genai import ChatGoogleGenerativeAI
+import asyncio
 
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    
 # ---------- Streamlit UI ----------
 st.set_page_config(page_title="Research Paper Summarizer & Q&A", layout="wide")
 st.title("📄 Research Paper Summarizer & Q&A Chatbot")
