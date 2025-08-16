@@ -116,15 +116,10 @@ if uploaded_file:
 
 
     with st.spinner("Processing document..."):
-        # Load & split (cached per hash)
-        if "split_docs" not in st.session_state:
-            st.session_state.split_docs = load_and_split_pdf(new_file_hash, uploaded_file)
-        split_docs = st.session_state.split_docs
+        
+        split_docs = load_and_split_pdf(new_file_hash, uploaded_file)
 
-        # Vector store (cached per hash)
-        if "vector_store" not in st.session_state:
-            st.session_state.vector_store = create_vector_store_cached(new_file_hash, split_docs)
-        vector_store = st.session_state.vector_store
+        vector_store = create_vector_store_cached(new_file_hash, split_docs)
 
         retriever = vector_store.as_retriever(search_type='mmr', search_kwargs={"k": 4, 'lambda_mult': 0.5})
 
