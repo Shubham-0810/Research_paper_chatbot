@@ -13,6 +13,18 @@ except RuntimeError:
 st.set_page_config(page_title="Research Paper Summarizer & Q&A", layout="wide")
 st.title("📄 Research Paper Summarizer & Q&A Chatbot")
 
+MAX_REQUESTS_PER_SESSION = 5
+
+if "requests" not in st.session_state:
+    st.session_state.requests = 0
+
+def check_limit():
+    if st.session_state.requests >= MAX_REQUESTS_PER_SESSION:
+        st.warning("You have reached the maximum allowed requests for this session.")
+        st.stop()
+    st.session_state.requests += 1
+
+
 # Step 1: Upload
 uploaded_file = st.file_uploader("Upload your research paper (PDF)", type=["pdf"])
 
