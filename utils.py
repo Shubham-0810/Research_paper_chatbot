@@ -167,7 +167,7 @@ def load_and_split_pdf(hash_key: str, uploaded_file) -> list[Document]:
 
 # ------------------ Vector Store ------------------
 @st.cache_resource(show_spinner=False)
-def create_vector_store_cached(hash_key: str, documents: list[Document]):
+def create_vector_store_cached(hash_key: str, _documents: list[Document]):
     embeddings = GoogleGenerativeAIEmbeddings(
         model='models/gemini-embedding-001',
         google_api_key=google_api_key
@@ -175,8 +175,8 @@ def create_vector_store_cached(hash_key: str, documents: list[Document]):
 
     vector_store = None
     batch_size = 20
-    for i in range(0, len(documents), batch_size):
-        batch = documents[i:i+batch_size]
+    for i in range(0, len(_documents), batch_size):
+        batch = _documents[i:i+batch_size]
         try:
             if vector_store is None:
                 vector_store = FAISS.from_documents(batch, embeddings)
