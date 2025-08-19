@@ -17,7 +17,7 @@ except RuntimeError:
 st.set_page_config(page_title="Research Paper Summarizer & Q&A", layout="wide")
 st.title("📄 Research Paper Summarizer & Q&A Chatbot")
 
-MAX_REQUESTS_PER_SESSION = 15  # Increased limit since we're using caching efficiently
+MAX_REQUESTS_PER_SESSION = 15  
 if "requests" not in st.session_state:
     st.session_state.requests = 0
 
@@ -141,15 +141,8 @@ if uploaded_file:
         key="question_input"
     )
     
-    # col1, col2 = st.columns([1, 4])
-    
-    # with col1:
     ask_button = st.button("🔍 Get Answer", type="secondary")
     
-    # with col2:
-    #     if st.button("🗑️ Clear Question"):
-    #         st.session_state.question_input = ""
-    #         st.experimental_rerun()
     
     if ask_button and user_question.strip():
         check_limit()
@@ -213,21 +206,6 @@ else:
     # No file uploaded
     st.info("👆 Please upload a PDF research paper to get started!")
     
-    # # Show usage instructions
-    # with st.expander("📖 How to use", expanded=True):
-    #     st.markdown("""
-    #     1. **Upload a PDF** research paper using the file uploader above
-    #     2. **Generate Summary** to get an overview of the paper
-    #     3. **Ask Questions** about the content of the paper
-        
-    #     **Features:**
-    #     - ✅ Cached processing for faster responses
-    #     - ✅ Smart file change detection
-    #     - ✅ Rate limiting to prevent API exhaustion
-    #     - ✅ Context-aware Q&A based on document content
-    #     """)
-    
-    # Clear any existing session state when no file
     if "current_file_hash" in st.session_state:
         for key in ["current_file_hash", "current_filename", "file_processed"]:
             if key in st.session_state:
