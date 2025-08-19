@@ -365,7 +365,7 @@ if uploaded_file:
                 # Clear caches
                 clear_cache_for_new_file()
                 st.success("🧹 All data cleared!")
-                st.experimental_rerun()
+                st.rerun()
         
         with col3:
             st.write(f"📊 **Requests used:** {st.session_state.requests}/{MAX_REQUESTS_PER_SESSION}")
