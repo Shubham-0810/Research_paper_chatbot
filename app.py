@@ -36,7 +36,7 @@ def handle_file_change(new_hash, filename):
     """Handle when a new file is uploaded"""
     # Clear file-specific session state
     keys_to_clear = [
-        "current_retriever", "current_llm", "summary_generated"
+        "current_retriever", "current_llm", "summary_generated", "show_advanced"
     ]
     for key in keys_to_clear:
         if key in st.session_state:
