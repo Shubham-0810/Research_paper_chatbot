@@ -36,7 +36,7 @@ def handle_file_change(new_hash, filename):
     """Handle when a new file is uploaded"""
     # Clear file-specific session state
     keys_to_clear = [
-        "current_retriever", "current_llm", "summary_generated", "show_advanced"
+        "current_retriever", "current_llm", "summary_generated"
     ]
     for key in keys_to_clear:
         if key in st.session_state:
@@ -49,7 +49,8 @@ def handle_file_change(new_hash, filename):
     st.session_state.current_file_hash = new_hash
     st.session_state.current_filename = filename
     st.session_state.file_processed = False
-
+    st.session_state.show_advanced = False
+    
 # ------------------ Main App Logic ------------------
 uploaded_file = st.file_uploader("Upload your research paper (PDF)", type=["pdf"])
 
