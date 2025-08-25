@@ -60,6 +60,7 @@ if uploaded_file:
         st.error("File too large! Please upload a PDF under 10 MB.")
         st.session_state.file_uploader = None
         uploaded_file = None
+        st.rerun()
         st.stop()
     else:
         new_file_hash = file_hash(uploaded_file)
