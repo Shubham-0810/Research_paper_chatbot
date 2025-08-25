@@ -61,7 +61,6 @@ if uploaded_file:
         st.session_state.file_uploader = None
         uploaded_file = None
         st.rerun()
-        st.stop()
     else:
         new_file_hash = file_hash(uploaded_file)
         
