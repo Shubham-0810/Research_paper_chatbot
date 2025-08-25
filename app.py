@@ -53,7 +53,7 @@ def handle_file_change(new_hash, filename):
     st.session_state.show_advanced = False
     
 # ------------------ Main App Logic ------------------
-uploaded_file = st.file_uploader("Upload your research paper (PDF)", type=["pdf"], key= 'file_uploader)
+uploaded_file = st.file_uploader("Upload your research paper (PDF)", type=["pdf"], key= 'file_uploader')
 
 if uploaded_file:
     if uploaded_file.size > MAX_FILE_SIZE:
