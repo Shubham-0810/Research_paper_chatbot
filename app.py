@@ -7,6 +7,7 @@ from utils import (
 from langchain_google_genai import ChatGoogleGenerativeAI
 import asyncio
 
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 # Ensure async loop exists
 try:
     asyncio.get_running_loop()
@@ -55,6 +56,8 @@ def handle_file_change(new_hash, filename):
 uploaded_file = st.file_uploader("Upload your research paper (PDF)", type=["pdf"])
 
 if uploaded_file:
+    if uploaded_file.size > MAX_FILE_SIZE:
+        st.error("File too large! Please upload a PDF under 10 MB.")
     new_file_hash = file_hash(uploaded_file)
     
     # Check if this is a new file
